@@ -16,6 +16,7 @@ class SinusoidalPositionEncoder(torch.nn.Module):
         batch_size = positions.size(0)
         positions = positions.type(dtype)
         device = positions.device
+        # TODO: extract static values
         log_timescale_increment = torch.log(torch.tensor([10000], dtype=dtype, device=device)) / (
             depth / 2 - 1
         )
@@ -52,11 +53,13 @@ class PositionwiseFeedForward(torch.nn.Module):
         super(PositionwiseFeedForward, self).__init__()
         self.w_1 = torch.nn.Linear(idim, hidden_units)
         self.w_2 = torch.nn.Linear(hidden_units, idim)
+        # TODO: remove dropout
         self.dropout = torch.nn.Dropout(dropout_rate)
         self.activation = activation
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward function."""
+        # TODO: remove dropout
         return self.w_2(self.dropout(self.activation(self.w_1(x))))
 
 
@@ -118,6 +121,7 @@ class MultiHeadedAttentionSANM(nn.Module):
         x = self.pad_fn(x)
         # x = self.fsmn_block(x)
         x = x.to(torch.float32)
+        # TODO: Move precision conversion to the initialization stage
         weight = self.fsmn_block.weight.to(torch.float32)
         bias = self.fsmn_block.bias.to(torch.float32) if self.fsmn_block.bias is not None else None
         x = F.conv1d(x, weight, bias, stride=self.fsmn_block.stride, padding=self.fsmn_block.padding, groups=self.fsmn_block.groups)
